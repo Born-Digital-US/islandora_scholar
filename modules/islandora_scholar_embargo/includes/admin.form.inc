@@ -21,7 +21,9 @@ function islandora_embargo_admin(array $form, array &$form_state) {
   $options = islandora_get_content_models();
   $selected = variable_get('islandora_embargo_content_models', array('ir:citationCModel', 'ir:thesisCModel'));
   foreach ($selected as $cmodel) {
-    $options = array($cmodel => $options[$cmodel]) + $options;
+    if (isset($options[$cmodel])) {
+      $options = array($cmodel => $options[$cmodel]) + $options;
+    }
   }
   foreach ($options as $key => $value) {
     $rows[$key] = array(
@@ -35,6 +37,12 @@ function islandora_embargo_admin(array $form, array &$form_state) {
     'title' => array('data' => t('Content Model')),
   );
   $form = array();
+  $form['email'] = array(
+    '#type' => 'checkbox',
+    '#title' => 'Suppress default email notifications for embargoes',
+    '#description' => 'Check if you have custom embargo notifications and would like to stop the default email notifications from sending.',
+    '#default_value' => variable_get('islandora_scholar_embargo_suppress_default_emails', FALSE),
+  );
   $form['intro'] = array(
     '#type' => 'item',
     '#title' => 'Select Content Models for objects to be embargoed',
@@ -75,10 +83,12 @@ function islandora_embargo_admin_submit(array $form, array &$form_state) {
   switch ($op) {
     case 'Reset to default':
       variable_del('islandora_embargo_content_models');
+      variable_del('islandora_scholar_embargo_suppress_default_emails');
       break;
 
     default:
       $enabled = array_filter($form_state['values']['the_table']);
       variable_set('islandora_embargo_content_models', $enabled);
+      variable_set('islandora_scholar_embargo_suppress_default_emails', $form_state['values']['email']);
   }
 }

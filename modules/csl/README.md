@@ -7,12 +7,10 @@ Allow for the storage/retrieval/validation of CSL 1.0.1 styles.
 
 ## Requirements
 
-This module requires no additional modules/libraries:
+This module requires the following modules/libraries:
 
 * [Islandora](https://github.com/islandora/islandora)
-* [Islandora Bookmark](https://github.com/Islandora/islandora_bookmark)
-* [CSL](https://github.com/Islandora/islandora_scholar/tree/7.x/modules/csl)
-* [Citeproc](https://github.com/Islandora/islandora_scholar/tree/7.x/modules/citeproc)
+* [Islandora Scholar](https://github.com/islandora/islandora_scholar)
 
 ## Installation
 
@@ -39,7 +37,7 @@ Having problems or solved a problem? Check out the Islandora google groups for a
 
 Current maintainers:
 
-* [Joardan Dukart](https://github.com/jordandukart)
+* [Bryan Brown](https://github.com/bryjbrown)
 
 ## Development
 
