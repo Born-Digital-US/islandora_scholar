@@ -7,11 +7,8 @@
  */
 
 /**
- * A page that lists years. I think the way to do this is to have a custom page which runs a solr query returning zero rows, and faceted with a facet.date.gap of a year.
- * A page listing articles, filtered by a year parameter in the url.
- * A page showing articles added/updated in the past two weeks.
+ * Implements hook_menu().
  */
-
 function islandora_google_scholar_menu() {
   $items = array(
     'gs_years' => array(

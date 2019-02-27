@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Page callback displays a list of years that have articles.
+ * Page callback: displays a list of years that have articles.
  *
  * Each year is a link to another page that displays a table of articles
  * published in that year.
@@ -11,6 +11,8 @@
  *
  * @return string
  * @throws \Exception
+ *
+ * @see islandora_google_scholar_menu()
  */
 function _islandora_google_scholar_page_years() {
   $solr_field = variable_get('islandora_scholar_google_scholar_publication_date_solr_field', "mods_originInfo_dateIssued_mdt");
@@ -76,7 +78,7 @@ function _islandora_google_scholar_page_years() {
 }
 
 /**
- * Page callback displays a table of the articles published in a given year.
+ * Page callback: displays a table of the articles published in a given year.
  *
  * Each row in the table provides two links:
  *   - To the standard islandora object page
@@ -86,6 +88,8 @@ function _islandora_google_scholar_page_years() {
  *
  * @return string
  * @throws \Exception
+ *
+ * @see islandora_google_scholar_menu()
  */
 function _islandora_google_scholar_page_year($year) {
 
@@ -140,13 +144,15 @@ function _islandora_google_scholar_page_year($year) {
 }
 
 /**
- * Page callback displays a list of articles created or modified in the past N weeks.
+ * Page callback: displays a list of articles created or modified in the past N weeks.
  *
  * @param string $weeks
  *   defaults to 2 weeks.
  *
  * @return string
  * @throws \Exception
+ *
+ * @see islandora_google_scholar_menu()
  */
 function _islandora_google_scholar_updated($weeks = '') {
   $weeks = !empty($weeks) && is_int((int) $weeks) ? (int) $weeks : 2;
@@ -198,12 +204,14 @@ function _islandora_google_scholar_updated($weeks = '') {
 }
 
 /**
- * Page callback provides an extremely basic view of a given object, showing
+ * Page callback: provides an extremely basic view of a given object, showing
  * just the title and the abstract.
  *
  * @param $pid
  *
  * @return string
+ *
+ * @see islandora_google_scholar_menu()
  */
 function _islandora_google_scholar_abstract($pid) {
   if (is_null($pid)) {
