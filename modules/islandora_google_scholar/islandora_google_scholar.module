@@ -7,6 +7,57 @@
  */
 
 /**
+ * A page that lists years. I think the way to do this is to have a custom page which runs a solr query returning zero rows, and faceted with a facet.date.gap of a year.
+ * A page listing articles, filtered by a year parameter in the url.
+ * A page showing articles added/updated in the past two weeks.
+ */
+
+function islandora_google_scholar_menu() {
+  $items = array(
+    'gs_years' => array(
+      'title' => 'Google Scholar Years',
+      'page callback' => '_islandora_google_scholar_page_years',
+      'file' => 'includes/page_callbacks.inc',
+      'access arguments' => array(
+        'access content',
+      ),
+      'type' => MENU_CALLBACK,
+    ),
+    'gs_updated' => array(
+      'title' => 'Google Scholar Articles Added/Updated',
+      'page callback' => '_islandora_google_scholar_updated',
+      'file' => 'includes/page_callbacks.inc',
+      'access arguments' => array(
+        'access content',
+      ),
+      'type' => MENU_CALLBACK,
+    ),
+    'gs_year/%' => array(
+      'title' => 'Google Scholar Year',
+      'page callback' => '_islandora_google_scholar_page_year',
+      'page arguments' => array(1),
+      'file' => 'includes/page_callbacks.inc',
+      'access arguments' => array(
+        'access content',
+      ),
+      'type' => MENU_CALLBACK,
+    ),
+    'gs_abstract/%' => array(
+      'title' => 'Abstract',
+      'page callback' => '_islandora_google_scholar_abstract',
+      'page arguments' => array(1),
+      'file' => 'includes/page_callbacks.inc',
+      'access arguments' => array(
+        'access content',
+      ),
+      'type' => MENU_CALLBACK,
+    ),
+  );
+
+  return $items;
+}
+
+/**
  * Creates meta tags to be placed in the head of the HTML.
  *
  * @param AbstractObject $object
