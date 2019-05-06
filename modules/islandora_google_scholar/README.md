@@ -60,6 +60,34 @@ Defaults to: `//mods:identifier[@type="doi"]`
 Google Scholar Default Search XPath <br/>
 Defaults to: `//mods:title`
 
+Google Scholar Publication Date SOLR Field<br/>
+Defaults to `mods_originInfo_dateIssued_mdt`.<br/>
+The solr date field used to facet by publication date during Google Scholar indexing. This is an autocomplete field. Start typing the solr field name and then select from the list. *Be sure to select a field ending with "_dt" or "_mdt", otherwise solr errors will result during google indexing.*
+
+Google Scholar Abstract SOLR Field<br/>
+Defaults to `mods_abstract_ms`.
+This is used when displaying object abstracts as required by Google Scholar.'
+
+Excluded Content Models<br/>
+Defaults to: `islandora:collectionCModel`<br/>
+Enter a comma-separated list of content model PIDs to exclude from Google Scholar search indexing. <br/>
+For example: `islandora:collectionCModel, islandora:newspaperCModel`
+
+## Configuring Google Scholar
+The islandora_google_scholar module exposes several pages to facilitate Google Scholar indexing of your repository. Urls to these pages should be entered into your [Google Scholar Inclusions dashboard](https://partnerdash.google.com/partnerdash/d/scholarinclusions).
+
+**Year index:** "Please provide the URL of a page listing all years available."
+    
+    Path: /gs_years, e.g, http://repository.example.edu/gs_years
+  
+**List of articles for each year:** "Please provide examples of URLs to pages that provide a list of articles for a given year."
+       
+    Path: /gs_year/[YYYY], e.g. http://repository.example.edu/gs_year/1850
+
+**Abstract examples:** "Please provide examples of individual abstract pages."
+    
+    Path: /gs_abstract/[PID], e.g. http://repository.example.edu/gs_abstract/samples:1
+
 ## Troubleshooting/Issues
 
 Having problems or solved a problem? Check out the Islandora google groups for a solution.
