@@ -1,0 +1,8 @@
+name = Islandora Export Extra
+description = "Export objects to different formats"
+core = 7.x
+php = 5.2
+
+dependencies[] = islandora
+dependencies[] = islandora_scholar
+dependencies[] = bibutils
