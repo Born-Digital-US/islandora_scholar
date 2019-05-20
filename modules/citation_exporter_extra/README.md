@@ -1,5 +1,3 @@
-Run <pre>composer install</pre> at the root of the folder to install the required libraries
-
 Place the block on the desired pages, and enable the formats that users can export to from the block
 configuration page.
 
