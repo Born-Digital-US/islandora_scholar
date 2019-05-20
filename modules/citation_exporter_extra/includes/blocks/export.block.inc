@@ -1,6 +1,8 @@
 <?php
 
-
+function citation_exporter_extra_format_options($format, $format_options) {
+  return $format;
+}
 /**
  * Implements hook_block_configure().
  */
@@ -8,7 +10,7 @@ function citation_exporter_extra_block_configure($delta = '') {
   // allow the user to enable / disable certain exports
   $form = array();
   $formats = citation_exporter_extra_get_export_formats();
-  $formats = array_map('citation_exporter_extra_check_for_binaries', array_keys($formats), $formats);
+  $formats = array_map('citation_exporter_extra_format_options', array_keys($formats), $formats);
   if ($delta == 'islandora_export_formats') {
     $form['#attached']['css'] = array(
       drupal_get_path('module', 'citation_exporter_extra') . '/css/export.block.css',
@@ -16,7 +18,7 @@ function citation_exporter_extra_block_configure($delta = '') {
     $form['islandora_export_formats_available_options'] = array(
       '#type' => 'checkboxes',
       '#options' => drupal_map_assoc($formats),
-      '#title' => t('Choose the available export formats for objects exposing this block.'),
+      '#title' => t('Choose the downloadable formats for objects exposing this block.'),
       '#default_value' => variable_get('islandora_export_formats_available_options', array()),
     );
   }

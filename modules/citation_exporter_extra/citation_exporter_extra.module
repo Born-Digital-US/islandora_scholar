@@ -22,6 +22,46 @@ function citation_exporter_extra_help($path, $arg) {
 }
 
 /**
+ *  Implements hook_mods_download_format_alter
+ * @param $formats
+ * @return array
+ */
+function citation_exporter_extra_mods_download_format_alter(&$formats) {
+  $formats = array_merge($formats, array(
+    'BibTex' => array(
+      'url' => 'islandora/object/[fedora:pid]/download_mods_as_bibtext',
+      'title' => "Compatible with Zotero"
+    ),
+    'EndNote' => array(
+      'url' => 'islandora/object/[fedora:pid]/download_mods_as_endnote',
+      'title' => "Compatible with EndNote"
+    ),
+    'MARC' => array(
+      'url' => 'islandora/object/[fedora:pid]/download_mods_as_marc'
+    ),
+    'MARCXML' => array(
+      'url' => 'islandora/object/[fedora:pid]/download_mods_as_marcxml',
+      'title' => 'Compatible with XML viewers'
+    ),
+    'DublinCore' => array(
+      'url' => 'islandora/object/[fedora:pid]/datastream/DC/download',
+      'title' => 'Compatible with XML viewers'
+    ),
+    'RIS' => array(
+      'url' => 'islandora/object/[fedora:pid]/download_mods_as_ris',
+      'title' => "Compatible with EndNote, Refworks, Zotero, and Reference Manager"
+    ),
+    //'JSON',
+    'JSON-LD' => array(
+      'url' => 'islandora/object/[fedora:pid]/download_mods_as_jsond',
+      'title' => 'Compatible with Zotero'
+    ),
+  ));
+
+  return $formats;
+}
+
+/**
  * @param IslandoraFedoraObject|bool $object
  *
  * @return array|bool
@@ -61,7 +101,8 @@ function citation_exporter_extra_menu() {
       'page callback' => 'citation_exporter_extra_xml_download_mods_to_marc',
       'page arguments' => array(2),
       'delivery callback' => 'citation_exporter_extra_download',
-      'access callback' => TRUE
+      'access callback' => 'citation_exporter_extra_access_callback',
+      'access arguments' => array(2)
     ),
     'islandora/object/%islandora_object/download_mods_as_endnote' => array(
       'title' => 'Download EndNoteXml',
@@ -69,7 +110,8 @@ function citation_exporter_extra_menu() {
       'page callback' => 'citation_exporter_extra_xml_download_mods_to_format',
       'page arguments' => array(2, 'MODS', 'EndNote'),
       'delivery callback' => 'citation_exporter_extra_download',
-      'access callback' => TRUE
+      'access callback' => 'citation_exporter_extra_access_callback',
+      'access arguments' => array(2)
     ),
 
     'islandora/object/%islandora_object/download_mods_as_bibtext' => array(
@@ -78,7 +120,8 @@ function citation_exporter_extra_menu() {
       'page callback' => 'citation_exporter_extra_xml_download_mods_to_format',
       'page arguments' => array(2, 'MODS', 'BibTeX'),
       'delivery callback' => 'citation_exporter_extra_download',
-      'access callback' => islandora_ob()
+      'access callback' => 'citation_exporter_extra_access_callback',
+      'access arguments' => array(2)
     ),
     'islandora/object/%islandora_object/download_mods_as_ris' => array(
       'title' => 'Download RIS',
@@ -86,7 +129,8 @@ function citation_exporter_extra_menu() {
       'page callback' => 'citation_exporter_extra_xml_download_mods_to_format',
       'page arguments' => array(2, 'MODS', 'RIS'),
       'delivery callback' => 'citation_exporter_extra_download',
-      'access callback' => TRUE
+      'access callback' => 'citation_exporter_extra_access_callback',
+      'access arguments' => array(2)
     ),
   );
 }
