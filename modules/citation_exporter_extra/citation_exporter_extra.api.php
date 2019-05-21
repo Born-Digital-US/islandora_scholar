@@ -17,7 +17,7 @@
  *
  * @param $formats
  *
- * @return array
+ * @return array array of formats, this will be displayed in the block configuration file, this DOES not defines commands for menu item callbacks
  */
 function hook_mods_download_format_alter(&$formats) {
   $formats = array_merge($formats, array(

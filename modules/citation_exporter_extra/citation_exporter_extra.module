@@ -1,10 +1,4 @@
 <?php
-/**
- * Import composer dependencies
- */
-if (file_exists(__DIR__ . "/vendor/autoload.php")) {
-  require_once __DIR__ . "/vendor/autoload.php";
-}
 
 /**
  * Implements hook_init().
@@ -18,7 +12,52 @@ function  citation_exporter_extra_init() {
  * Implements hook_help().
  */
 function citation_exporter_extra_help($path, $arg) {
-  return '<p>' .   t('Enables stream downloads from object data streams thought the use of bibutils and easyrdf')  . '</p>';
+  switch ($path) {
+    case 'admin/help#citation_exporter_extra':
+      return '<p>' .   t('Enables stream downloads from object data streams thought the use of bibutils and easyrdf')  . '</p>';
+      break;
+    default;
+  }
+}
+
+/**
+ *  Implements hook_mods_download_format_alter
+ * @param $formats
+ * @return array
+ */
+function citation_exporter_extra_mods_download_format_alter(&$formats) {
+  $formats = array_merge($formats, array(
+    'BibTex' => array(
+      'url' => 'islandora/object/[fedora:pid]/download_mods_as_bibtext',
+      'title' => "Compatible with Zotero"
+    ),
+    'EndNote' => array(
+      'url' => 'islandora/object/[fedora:pid]/download_mods_as_endnote',
+      'title' => "Compatible with EndNote"
+    ),
+    'MARC' => array(
+      'url' => 'islandora/object/[fedora:pid]/download_mods_as_marc'
+    ),
+    'MARCXML' => array(
+      'url' => 'islandora/object/[fedora:pid]/download_mods_as_marcxml',
+      'title' => 'Compatible with XML viewers'
+    ),
+    'DublinCore' => array(
+      'url' => 'islandora/object/[fedora:pid]/datastream/DC/download',
+      'title' => 'Compatible with XML viewers'
+    ),
+    'RIS' => array(
+      'url' => 'islandora/object/[fedora:pid]/download_mods_as_ris',
+      'title' => "Compatible with EndNote, Refworks, Zotero, and Reference Manager"
+    ),
+    //'JSON',
+    'JSON' => array(
+      'url' => 'islandora/object/[fedora:pid]/download_mods_as_json',
+      'title' => 'Compatible with Zotero'
+    ),
+  ));
+
+  return $formats;
 }
 
 /**
@@ -61,7 +100,8 @@ function citation_exporter_extra_menu() {
       'page callback' => 'citation_exporter_extra_xml_download_mods_to_marc',
       'page arguments' => array(2),
       'delivery callback' => 'citation_exporter_extra_download',
-      'access callback' => TRUE
+      'access callback' => 'citation_exporter_extra_access_callback',
+      'access arguments' => array(2)
     ),
     'islandora/object/%islandora_object/download_mods_as_endnote' => array(
       'title' => 'Download EndNoteXml',
@@ -69,7 +109,8 @@ function citation_exporter_extra_menu() {
       'page callback' => 'citation_exporter_extra_xml_download_mods_to_format',
       'page arguments' => array(2, 'MODS', 'EndNote'),
       'delivery callback' => 'citation_exporter_extra_download',
-      'access callback' => TRUE
+      'access callback' => 'citation_exporter_extra_access_callback',
+      'access arguments' => array(2)
     ),
 
     'islandora/object/%islandora_object/download_mods_as_bibtext' => array(
@@ -78,7 +119,8 @@ function citation_exporter_extra_menu() {
       'page callback' => 'citation_exporter_extra_xml_download_mods_to_format',
       'page arguments' => array(2, 'MODS', 'BibTeX'),
       'delivery callback' => 'citation_exporter_extra_download',
-      'access callback' => islandora_ob()
+      'access callback' => 'citation_exporter_extra_access_callback',
+      'access arguments' => array(2)
     ),
     'islandora/object/%islandora_object/download_mods_as_ris' => array(
       'title' => 'Download RIS',
@@ -86,11 +128,40 @@ function citation_exporter_extra_menu() {
       'page callback' => 'citation_exporter_extra_xml_download_mods_to_format',
       'page arguments' => array(2, 'MODS', 'RIS'),
       'delivery callback' => 'citation_exporter_extra_download',
-      'access callback' => TRUE
+      'access callback' => 'citation_exporter_extra_access_callback',
+      'access arguments' => array(2)
+    ),
+    'islandora/object/%islandora_object/download_mods_as_json' => array(
+      'title' => 'Download JSON',
+      'type' => MENU_CALLBACK,
+      'page callback' => 'citation_exporter_extra_xml_download_mods_to_json',
+      'page arguments' => array(2),
+      'delivery callback' => 'citation_exporter_extra_download',
+      'access callback' => 'citation_exporter_extra_access_callback',
+      'access arguments' => array(2)
     ),
   );
 }
 
+/**
+ * Prepares  a fedora object with a MODS stream to JSON
+ *
+ * @param \FedoraObject $object
+ *
+ * @return string
+ */
+function citation_exporter_extra_xml_download_mods_to_json($object) {
+  module_load_include('inc', 'citeproc', 'includes/converter');
+  $ds = $object->getDatastream('MODS');
+  $raw = convert_mods_to_citeproc_jsons($ds->content);
+  if ($raw) {
+    $raw_json = json_encode($raw);
+    if ($raw_json) {
+      return $raw_json;
+    }
+  }
+  drupal_not_found();
+}
 /**
  * Access callback.
  *
@@ -149,16 +220,14 @@ function citation_exporter_extra_xml_download_mods_to_marc($object) {
 function citation_exporter_extra_xml_download_mods_to_format($object, $from, $to) {
   module_load_include('inc', 'citation_exporter_extra', 'includes/utilities');
 
-  /**
+    /**
    * @var \IslandoraFedoraDatastream $ds
    */
-
-  if (citation_exporter_extra_access_callback($object)) {
     $ds = $object->getDatastream('MODS');
-    $enxml_file = file_save_data($ds->content, "temporary://temp_en.xml");
+    $enxml_file = file_save_data($ds->content, "temporary://temp_en" . $object->id);
     $enxml_file->status &= ~FILE_STATUS_PERMANENT;
     file_save($enxml_file);
-    $mods_file = drupal_tempnam('temporary://', 'temp_mods.xml');
+    $mods_file = drupal_tempnam('temporary://', 'temp_mods' . $object->id);
 
     $res = BibutilsExtra::Convert(
       drupal_realpath($enxml_file->uri),
@@ -169,19 +238,13 @@ function citation_exporter_extra_xml_download_mods_to_format($object, $from, $to
 
     if ($res) {
       $to_return = file_get_contents($mods_file);
-      module_load_include('inc', 'islandora', 'includes/utilities');
-      $mods_file = islandora_temp_file_entry($mods_file, 'text/xml');
-
-      file_delete($enxml_file);
-      file_delete($mods_file);
+      file_unmanaged_delete($enxml_file);
+      file_unmanaged_delete($mods_file);
       return $to_return;
     }
     else {
       drupal_not_found();
     }
-  } else {
-    return drupal_access_denied();
-  }
 }
 
 /**
@@ -217,6 +280,10 @@ function citation_exporter_extra_download($output) {
     case 'download_mods_as_ris':
       drupal_add_http_header('Content-Disposition', "attachment; filename=\"{$name}.RIS.ris\"");
       break;
+    case 'download_mods_as_json':
+      drupal_add_http_header('Content-Disposition', "attachment; filename=\"{$name}.JSON.json\"");
+      break;
+
     default:
       drupal_add_http_header('Content-Disposition', "attachment; filename=\"{$name}.export\"");
   }
