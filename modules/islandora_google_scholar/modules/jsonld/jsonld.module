@@ -1,0 +1,144 @@
+<?php
+
+function jsonld_create_script_tag($object) {
+  if (!isset($object['MODS']) || !islandora_datastream_access(ISLANDORA_VIEW_OBJECTS, $object['MODS'])) {
+    return FALSE;
+  }
+  // Start mapping fields, ultimately we want something along the lines of
+  /**
+   * {
+  "@context": "http://schema.org",
+  "@type": "schema:Thesis",
+  "schema:identifier": {
+  "@type": "PropertyValue",
+  "propertyID": "DOI",
+  "value": "https://doi.org/10.6092/unibo/amsdottorato/2545"
+  },
+  "url": "http://example-repository.edu",
+  "schema:name": "Example Thesis Title",
+  "schema:inLanguage": "eng",
+  "schema:inSupportOf": "Doctor of Philosophy, Information and Computer Sciences",
+  "schema:author": {
+  "@type": "schema:Person",
+  "name": "Last, First",
+  "givenName": "First",
+  "familyName": "Last",
+  "@id": "https://orcid.org/0000-0001-7224-6462"
+  },
+  "schema:sourceOrganization": {
+  "@type": "schema:CollegeOrUniversity",
+  "schema:name": "College Name"
+  },
+  "schema:datePublished": "1991",
+  "schema:description": "Article abstract"
+  }
+   */
+  // Automatic creation using third party libraries such as easyRDF (included in D8 is not possible as RDF support is not available until CLAW(
+  $cModel = $object->models[0];
+  $jModel = getSchemaFromCModel($cModel);
+  $jsonLd = array();
+  if ($jModel) {
+    $jsonLd['@context'] = 'http://schema.org';
+    $jsonLd['@type'] = $jModel;
+    $mods = NULL;
+    if ($object['MODS'] instanceof DOMNode) {
+      $mods = simplexml_import_dom($object['MODS']);
+    }
+    else {
+      try {
+        $mods = simplexml_load_string($object['MODS']->content);
+        // Generate Identifiers
+        $jsonLd['@id'] = $object->id;
+        $jsond_xp_indentifiers = variable_get('islandora_scholar_xpaths_identifiers', '//mods:mods[1]/mods:identifier[@type]');
+        $jsond_xp_indentifiers = $mods->xpath($jsond_xp_indentifiers);
+        $jsond_xp_title = variable_get('islandora_scholar_library_catalog_default_search_xpath', '//mods:mods[1]/mods:titleInfo[1]');
+        $jsond_xp_title = $mods->xpath($jsond_xp_title);
+        foreach ($jsond_xp_indentifiers as $jsond_indentifier) {
+          $attribute_name = $jsond_indentifier->attributes();
+          $jsonLd['identifier'][] = array(
+            '@type' => 'PropertyValue',
+            'propertyID' => strval($attribute_name['type']),
+            'value' => strval($jsond_indentifier)
+          );
+        }
+        $jsonLd['url'] = $GLOBALS['base_root'] . request_uri();
+        $jsonLd['name'] = (count($jsond_xp_title) > 0) ? strval($jsond_xp_title[0]->title) : '';
+        $jsonLd['inLanguage'] = "eng";
+
+        return json_encode($jsonLd,  JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_NUMERIC_CHECK);
+      }
+      catch (Exception $e) {
+        watchdog('jsond', 'Got exception while parsing.  Message: !msg Errors: !error', array(
+          '!msg' => $e->getMessage(),
+          '!error' => libxml_get_errors()));
+        return array();
+      }
+    }
+  }
+}
+
+function getSchemaFromCModel($model) {
+  $mapping = array (
+    'ir:thesisCModel' => 'Thesis',
+    'ir:citationCModel' => 'ScholarlyArticle',
+    'islandora:sp_basic_image' => 'ImageObject',
+    'islandora:sp_large_image_cmodel' => 'ImageObject',
+    'islandora:sp_pdf' => 'DigitalDocument',
+    'islandora:sp-audioCModel' => 'AudioObject',
+    'islandora:sp_videoCModel' => 'VideoObject',
+    'islandora:bookCModel' => 'Book',
+    'islandora:newspaperCModel' => 'Newspaper',
+    'islandora:eventCModel' => 'Event',
+    'islandora:placeCModel' => 'Place',
+    'islandora:personCModel' => 'Person',
+    'islandora:organizationCModel' => 'CollegeorUniversity',
+    'islandora:sp_disk_image' => 'Dataset',
+    'islandora:sp_web_archive' => 'WebPage'
+  );
+
+  if (isset($mapping[$model])) {
+    return $mapping[$model];
+  } else {
+    return false;
+  }
+}
+
+function jsonld_embed_scripts($_script) {
+  // Get islandora mappings
+  module_load_include('inc', 'islandora', 'includes/mimetype.utils');
+  $mimetype = islandora_mime_mapping();
+  // Generate script to hold the JSON data
+  $script = array(
+    '#tag' => 'script',
+    '#attributes' => array(
+      'type' => $mimetype['jsonld'],
+    ),
+    '#value' => $_script,
+  );
+  drupal_add_html_head($script, 'script');
+}
+/**
+ * Implements hook_CMODEL_islandora_view_object().
+ */
+function jsonld_ir_citationCModel_islandora_view_object($object) {
+  $tags = jsonld_create_script_tag($object);
+  jsonld_embed_scripts($tags);
+}
+
+/**
+ * Implements hook_CMODEL_islandora_view_object().
+ *
+ * @param \FedoraObject $object
+ */
+function jsonld_ir_thesisCModel_islandora_view_object($object) {
+  $tags = jsonld_create_script_tag($object);
+  jsonld_embed_scripts($tags);
+}
+
+/**
+* Implements hook_CMODEL_islandora_view_object().
+ */
+function jsonld_pdfCModel_islandora_view_object($object) {
+  $tags = jsonld_create_script_tag($object);
+  jsonld_embed_scripts($tags);
+}
