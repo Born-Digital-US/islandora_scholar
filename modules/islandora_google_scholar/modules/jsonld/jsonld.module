@@ -63,7 +63,34 @@ function jsonld_create_script_tag($object) {
         }
         $jsonLd['url'] = $GLOBALS['base_root'] . request_uri();
         $jsonLd['name'] = (count($jsond_xp_title) > 0) ? strval($jsond_xp_title[0]->title) : '';
+        $jsonLd['description'] = '';
         $jsonLd['inLanguage'] = "eng";
+        $jsonLd['inSupportOf'] = '';
+        // Set authors for this particular piece of work
+
+        $jsonLd['sourceOrganization'] = array(
+          '@type' => 'CollegeOrUniversity',
+          'name' => variable_get('site_name')
+        );
+        /**
+         * Date in which this particular publication was published
+         * @see islandora_google_scholar:islandora_google_scholar_create_meta_tags
+         **/
+        $tags = islandora_google_scholar_create_meta_tags($object);
+        if ($tags) {
+          $jsonLd['datePublished'] = $tags['citation_publication_date'];
+          foreach ($tags['citation_author'] as $author) {
+            $author_parts = explode(', ', $author);
+            $jsonLd['author'] = array(
+              'name' => $author,
+              'givenName' => (isset($author_parts[1]) ? $author_parts[1] : ''),
+              'familyName' => (isset($author_parts[0]) ? $author_parts[0] : ''),
+              '@type' => 'Person'
+            );
+          }
+        }
+
+
 
         return json_encode($jsonLd,  JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_NUMERIC_CHECK);
       }
@@ -120,25 +147,7 @@ function jsonld_embed_scripts($_script) {
 /**
  * Implements hook_CMODEL_islandora_view_object().
  */
-function jsonld_ir_citationCModel_islandora_view_object($object) {
-  $tags = jsonld_create_script_tag($object);
-  jsonld_embed_scripts($tags);
-}
-
-/**
- * Implements hook_CMODEL_islandora_view_object().
- *
- * @param \FedoraObject $object
- */
-function jsonld_ir_thesisCModel_islandora_view_object($object) {
-  $tags = jsonld_create_script_tag($object);
-  jsonld_embed_scripts($tags);
-}
-
-/**
-* Implements hook_CMODEL_islandora_view_object().
- */
-function jsonld_pdfCModel_islandora_view_object($object) {
+function jsonld_islandora_view_object($object) {
   $tags = jsonld_create_script_tag($object);
   jsonld_embed_scripts($tags);
 }
