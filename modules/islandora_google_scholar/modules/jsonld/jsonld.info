@@ -1,5 +1,5 @@
 name = Islandora Google Scholar - JSON-LD
-description = "This module provides RDF - JSOND-LD meta tags to help indexing in Google Scholar and Zotero"
+description = "This module provides JSOND-LD meta tags to help indexing in Google Scholar and Zotero"
 dependencies[] = islandora_google_scholar
 version = 7.x-dev
 core = 7.x
