@@ -63,9 +63,9 @@ function jsonld_create_script_tag($object) {
         }
         $jsonLd['url'] = $GLOBALS['base_root'] . request_uri();
         $jsonLd['name'] = (count($jsond_xp_title) > 0) ? strval($jsond_xp_title[0]->title) : '';
-        $jsonLd['description'] = '';
+        //$jsonLd['description'] = '';
         $jsonLd['inLanguage'] = "eng";
-        $jsonLd['inSupportOf'] = '';
+        //$jsonLd['inSupportOf'] = '';
         // Set authors for this particular piece of work
 
         $jsonLd['sourceOrganization'] = array(
@@ -81,7 +81,7 @@ function jsonld_create_script_tag($object) {
           $jsonLd['datePublished'] = $tags['citation_publication_date'];
           foreach ($tags['citation_author'] as $author) {
             $author_parts = explode(', ', $author);
-            $jsonLd['author'] = array(
+            $jsonLd['author'][] = array(
               'name' => $author,
               'givenName' => (isset($author_parts[1]) ? $author_parts[1] : ''),
               'familyName' => (isset($author_parts[0]) ? $author_parts[0] : ''),
@@ -89,8 +89,6 @@ function jsonld_create_script_tag($object) {
             );
           }
         }
-
-
 
         return json_encode($jsonLd,  JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_NUMERIC_CHECK);
       }
