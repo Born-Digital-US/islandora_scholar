@@ -4,6 +4,7 @@ function jsonld_create_script_tag($object) {
   if (!isset($object['MODS']) || !islandora_datastream_access(ISLANDORA_VIEW_OBJECTS, $object['MODS'])) {
     return FALSE;
   }
+
   // Start mapping fields, ultimately we want something along the lines of
   /**
    * {
@@ -34,12 +35,19 @@ function jsonld_create_script_tag($object) {
   }
    */
   // Automatic creation using third party libraries such as easyRDF (included in D8 is not possible as RDF support is not available until CLAW(
-  $cModel = $object->models[0];
+    $cModel = $object->models[0];
   $jModel = getSchemaFromCModel($cModel);
   $jsonLd = array();
   if ($jModel) {
     $jsonLd['@context'] = 'http://schema.org';
     $jsonLd['@type'] = $jModel;
+
+    // Generate image if this one object has any
+    if (isset($object['TN'])) {
+      $resource_url = url("islandora/object/{$object->id}/datastream/TN/view", array('absolute' => TRUE));
+      $jsonLd['image'] = $resource_url;
+    }
+
     $mods = NULL;
     if ($object['MODS'] instanceof DOMNode) {
       $mods = simplexml_import_dom($object['MODS']);
@@ -51,8 +59,10 @@ function jsonld_create_script_tag($object) {
         $jsonLd['@id'] = $object->id;
         $jsond_xp_indentifiers = variable_get('islandora_scholar_xpaths_identifiers', '//mods:mods[1]/mods:identifier[@type]');
         $jsond_xp_indentifiers = $mods->xpath($jsond_xp_indentifiers);
-        $jsond_xp_title = variable_get('islandora_scholar_library_catalog_default_search_xpath', '//mods:mods[1]/mods:titleInfo[1]');
-        $jsond_xp_title = $mods->xpath($jsond_xp_title);
+        $jsonLd_xp_abstract = variable_get('islandora_scholar_xpaths_abstract', '//mods:mods[1]/mods:abstract' );
+        $jsonLd_xp_abstract = $mods->xpath($jsonLd_xp_abstract);
+        $jsonLd['description'] = (!empty($jsonLd_xp_abstract)) ? (string) end($jsonLd_xp_abstract) : '';
+
         foreach ($jsond_xp_indentifiers as $jsond_indentifier) {
           $attribute_name = $jsond_indentifier->attributes();
           $jsonLd['identifier'][] = array(
@@ -62,7 +72,20 @@ function jsonld_create_script_tag($object) {
           );
         }
         $jsonLd['url'] = $GLOBALS['base_root'] . request_uri();
-        $jsonLd['name'] = (count($jsond_xp_title) > 0) ? strval($jsond_xp_title[0]->title) : '';
+
+        // Get topics
+        $jsonLd_xp_topics = variable_get('islandora_scholar_xpaths_topics', '//mods:subject');
+        $jsonLd_xp_topics = $mods->xpath($jsonLd_xp_topics);
+        foreach ($jsonLd_xp_topics as $topic) {
+          if (isset($topic->topic) && !empty(strval($topic->topic))) {
+            $jsonLd['keywords'][] = strval($topic->topic);
+          }
+        }
+        // Keywords or tags used to describe this content. Multiple entries in a keywords list are typically delimited by commas.
+        if (!empty($jsonLd['keywords'])) {
+          $jsonLd['keywords'] = implode(",", $jsonLd['keywords']);
+        }
+
         //$jsonLd['description'] = '';
         $jsonLd['inLanguage'] = "eng";
         //$jsonLd['inSupportOf'] = '';
@@ -72,6 +95,21 @@ function jsonld_create_script_tag($object) {
           '@type' => 'CollegeOrUniversity',
           'name' => variable_get('site_name')
         );
+
+        $title_results = $mods->xpath(variable_get('islandora_scholar_xpaths_title', '//mods:mods[1]/mods:titleInfo/mods:title'));
+        $title = (string) reset($title_results);
+        $subtitle_results = $mods->xpath(variable_get('islandora_scholar_xpaths_title_sub_title', '//mods:mods[1]/mods:titleInfo/mods:subTitle'));
+        $subtitle = (string) reset($subtitle_results);
+
+        if (!empty($title)) {
+          if (!empty($subtitle)) {
+            $jsonLd['name']  = "{$title}: {$subtitle}";
+          }
+          else {
+            $jsonLd['name']  = $title;
+          }
+        }
+
         /**
          * Date in which this particular publication was published
          * @see islandora_google_scholar:islandora_google_scholar_create_meta_tags
@@ -79,6 +117,7 @@ function jsonld_create_script_tag($object) {
         $tags = islandora_google_scholar_create_meta_tags($object);
         if ($tags) {
           $jsonLd['datePublished'] = $tags['citation_publication_date'];
+
           foreach ($tags['citation_author'] as $author) {
             $author_parts = explode(', ', $author);
             $jsonLd['author'][] = array(
@@ -147,5 +186,8 @@ function jsonld_embed_scripts($_script) {
  */
 function jsonld_islandora_view_object($object) {
   $tags = jsonld_create_script_tag($object);
-  jsonld_embed_scripts($tags);
+  // Only display JSON-D metadata if the user has a valid data stream and the user has the right permissions
+  if ($tags) {
+    jsonld_embed_scripts($tags);
+  }
 }
