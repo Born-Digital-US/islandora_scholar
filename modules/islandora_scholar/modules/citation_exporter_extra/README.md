@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Generates a block with metadata export options that can be embedded in any object page. Currently supported formats include:
+Generates a block with metadata export options that can be embedded in any object page. Currently supported export formats include:
 
 * BibTex
 * EndNote
