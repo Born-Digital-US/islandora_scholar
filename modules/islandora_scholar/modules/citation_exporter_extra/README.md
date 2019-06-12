@@ -2,7 +2,14 @@
 
 ## Introduction
 
-Automatically embeds JSON-LD in object pages. The JSON-LD fields are mapped from an object's MODS record as follows.
+Generates a block with metadata export options that can be embedded in any object page. Currently supported formats include:
+
+* BibTex
+* EndNote
+* MARC
+* MARCXML
+* DublinCore
+* RIS
 
 ## Requirements
 
