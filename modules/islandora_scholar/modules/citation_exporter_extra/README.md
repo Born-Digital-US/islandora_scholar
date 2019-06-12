@@ -1,4 +1,4 @@
-# Islandora Google Scholar - JSON-LD
+# Islandora Export Extra
 
 ## Introduction
 
