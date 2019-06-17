@@ -1,0 +1,9 @@
+<?php
+
+/**
+ * Implements hook_install().
+ */
+function islandora_scholar_profile_install()
+{
+
+}

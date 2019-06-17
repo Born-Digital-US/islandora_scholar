@@ -1,0 +1,15 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ */
+function islandora_scholar_profile_menu() {
+
+}
+
+/**
+ * Implements hook_prepare().
+ */
+function islandora_scholar_profile_prepare($node) {
+  
+}
