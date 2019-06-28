@@ -46,6 +46,5 @@
             <?php print $variables['rss_feed']; ?>
           <?php endif; ?>
         </div>
-
     </div>
 </div>
