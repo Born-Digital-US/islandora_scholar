@@ -1,0 +1,242 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ */
+function islandora_scholar_profile_menu() {
+
+}
+
+/**
+ * Implements hook_prepare().
+ */
+function islandora_scholar_profile_prepare($node) {
+  
+}
+
+/**
+ * Implements hook_init().
+ */
+function islandora_scholar_profile_preprocess_html(&$variables) {
+  $path = drupal_get_path('module', 'islandora_scholar_profile');
+  drupal_add_css($path . '/css/islandora-person.css');
+}
+
+/**
+ * Implements hook_theme_registry_alter().
+ */
+function islandora_scholar_profile_theme_registry_alter(&$theme_registry) {
+  $path = drupal_get_path('module', 'islandora_scholar_profile');
+  $theme_registry['islandora_person']['template'] = $path . '/templates/islandora-person';
+  $theme_registry['islandora_person']['theme path'] = $path;
+}
+
+/**
+ * Implements hook_islandora_required_objects().
+ */
+function islandora_scholar_profile_islandora_required_objects(IslandoraTuque $connection) {
+  $module_path = drupal_get_path('module', 'islandora_scholar_profile');
+
+  $person_collection = $connection->repository->constructObject('islandora:person');
+  $person_collection->owner = 'fedoraAdmin';
+  $person_collection->label = 'Person Collection';
+  $person_collection->models = 'islandora:collectionCModel';
+  $person_collection->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', 'islandora:root');
+  // Collection Policy Datastream.
+  $datastream = $person_collection->constructDatastream('COLLECTION_POLICY', 'X');
+  $datastream->label = 'Collection policy';
+  $datastream->mimetype = 'application/xml';
+  $datastream->setContentFromFile("$module_path/xml/islandora_scholar_profile_collection_policy.xml", FALSE);
+  $person_collection->ingestDatastream($datastream);
+  // TN Datastream.
+  $datastream = $person_collection->constructDatastream('TN', 'M');
+  $datastream->label = 'Thumbnail';
+  $datastream->mimetype = 'image/png';
+  $datastream->setContentFromFile("$module_path/images/folder.png", FALSE);
+  $person_collection->ingestDatastream($datastream);
+  return array(
+    'islandora_person' => array(
+      'title' => 'Islandora Person',
+      'objects' => array(
+        $person_collection
+      ),
+    ),
+  );
+}
+/**
+ * Implements hook_xml_form_builder_get_form_modify_definition_alter().
+ * Updates forms to include u1 and u2 fields on all objects
+ *
+ * @param $form
+ * @param $form_state
+ */
+function islandora_scholar_profile_xml_form_builder_get_form_modify_definition_alter(&$form, &$form_state) {
+ if (isset($form_state['association']) && $form_state['association']['dsid'] == 'MODS') {
+   $form['u12_fieldset'] = array(
+     '#type' => 'fieldset',
+     '#access' => true,
+     '#collapsed' => FALSE,
+     '#title' => 'Profile Identifiers',
+     '#description' => t('U1 and U2 identifiers to link this object with a(many) department(s) and a(many) researcher(s)'),
+     'u1_identifier_tabs' => array (
+       '#type' => 'tabs',
+       '#access' => true,
+       '#autocomplete_path' => 'islandora_autocomplete/islandora:personCModel/mads.identifier',
+       '#required' => false,
+       '#title' => 'Faculty Identifier(s)',
+       '#tree' => true,
+       'u1_identifier_tabpanel' =>
+         array (
+           '#type' => 'tabpanel',
+           '#access' => true,
+           '#autocomplete_path' => 'islandora_autocomplete/islandora:personCModel/mads.identifier',
+           '#description' => 'This is the faculty member\'s username. If more than one faculty member is required, select Add button and add another identifier.',
+           '#required' => false,
+           '#tree' => true,
+           '#actions' =>
+             array (
+               'create' => NULL,
+               'read' =>
+                 array (
+                   'path' => '/mods:mods/mods:identifier[@type=\'u1\']',
+                   'context' => 'document',
+                 ),
+               'update' => NULL,
+               'delete' =>
+                 array (
+                   'path' => 'self::node()',
+                   'context' => 'self',
+                 ),
+             ),
+           'u1_identifier_text' =>
+             array (
+               '#type' => 'textfield',
+               '#access' => true,
+               '#autocomplete_path' => 'islandora_autocomplete/islandora:personCModel/mads.username',
+               '#required' => false,
+               '#tree' => true,
+               '#actions' =>
+                 array (
+                   'create' =>
+                     array (
+                       'path' => '/mods:mods',
+                       'context' => 'document',
+                       'schema' => '',
+                       'type' => 'xml',
+                       'prefix' => NULL,
+                       'value' => '<identifier type="u1">%value%</identifier>',
+                     ),
+                   'read' =>
+                     array (
+                       'path' => 'self::node()',
+                       'context' => 'parent',
+                     ),
+                   'update' => NULL,
+                   'delete' => NULL,
+                 ),
+             ),
+         ),
+     ),
+     'u2_identifier_tabs' => array (
+     '#type' => 'tabs',
+     '#access' => true,
+     '#autocomplete_path' => 'islandora_autocomplete/islandora:organizationCModel/mads.identifier',
+     '#description' => t('This is the departmental identifier. If more than one department is required, select Add button and add another identifier. Ensure that you are using an <b>authorized departmental</b> name from the IslandScholar list.'),
+     '#required' => false,
+     '#title' => 'Departmental Identifier(s)',
+     '#tree' => true,
+     'u2_identifier_tabpanel' =>
+       array (
+         '#type' => 'tabpanel',
+         '#access' => true,
+         '#autocomplete_path' => 'islandora_autocomplete/islandora:organizationCModel/mads.identifier',
+         '#description' => t('This is the departmental identifier. If more than one department is required, select Add button and add another identifier.'),
+         '#required' => false,
+         '#tree' => true,
+         '#actions' =>
+           array (
+             'create' => NULL,
+             'read' =>
+               array (
+                 'path' => '/mods:mods/mods:identifier[@type=\'u2\']',
+                 'context' => 'document',
+               ),
+             'update' => NULL,
+             'delete' =>
+               array (
+                 'path' => 'self::node()',
+                 'context' => 'self',
+               ),
+           ),
+         'u2_identifier_text' =>
+           array (
+             '#type' => 'textfield',
+             '#access' => true,
+             '#autocomplete_path' => 'islandora_autocomplete/islandora:organizationCModel/mads.namePart/',
+             '#required' => false,
+             '#tree' => true,
+             '#actions' =>
+               array (
+                 'create' =>
+                   array (
+                     'path' => '/mods:mods',
+                     'context' => 'document',
+                     'schema' => '',
+                     'type' => 'xml',
+                     'prefix' => NULL,
+                     'value' => '<identifier type="u2">%value%</identifier>',
+                   ),
+                 'read' =>
+                   array (
+                     'path' => 'self::node()',
+                     'context' => 'parent',
+                   ),
+                 'update' => NULL,
+                 'delete' => NULL,
+               ),
+           ),
+       ),
+   )
+   );
+ }
+}
+
+/**
+ * Implements template_preprocess_HOOK().
+ */
+function islandora_scholar_profile_preprocess_islandora_person(array &$variables) {
+  $biography = "";
+  $object = $variables['object'];
+  $object_pid = $object->id;
+
+  if ($object['MADS']) {
+    $mads = $object['MADS']->content;
+    $simplexml = simplexml_load_string($mads);
+
+    // Re-write activities
+    $activities = $simplexml->fieldOfActivity;
+    $activity_vocabulary = variable_get('islandora_scholar_profile_activity_taxonomy', 'islandora_sp_activities_vocabulary');
+    foreach ($activities as $activity_name) {
+      $activity_name = (string) $activity_name;
+      if ($activity_name) {
+        $terms = taxonomy_get_term_by_name($activity_name, $activity_vocabulary);
+        if (!empty($terms)) {
+          //if there are multiple matches, use the first one
+          $terms = array_shift($terms);
+          $activity_name = l($terms->name,  variable_get('islandora_scholar_profile_activity_view', 'islandora_sp_activities_view') . "/{$terms->tid}");
+        }
+        // lookup in taxonomy defined in settings.
+        $fields_of_activity[] = (string) $activity_name;
+      }
+    }
+    if (isset($fields_of_activity)) {
+      $list_variables = array(
+        'items' => $fields_of_activity,
+        'title' => t('Research Interests'),
+        'type' => 'ul',
+        'attributes' => array('class' => 'research_interests'),
+      );
+      $variables['activities'] = theme_item_list($list_variables);
+    }
+  }
+}
