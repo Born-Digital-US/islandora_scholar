@@ -71,6 +71,19 @@ function islandora_scholar_profile_islandora_required_objects(IslandoraTuque $co
  * @param $form_state
  */
 function islandora_scholar_profile_xml_form_builder_get_form_modify_definition_alter(&$form, &$form_state) {
+  $core_activities_voc = taxonomy_vocabulary_machine_name_load('islandora_sp_activities_vocabulary');
+  $core_activities_voc_ref = 'field_islandora_spa_reference';
+  if (array_key_exists('islandora_mads_person_form', $form_state['associations'])) {
+    /**
+     * Here we're updating the XML form to expose Interests as a taxonomy reference instead of just plain tags, as long as the
+     * taxonomy vocabulary and reference field set by the user exists, this will limit the things users can set as interests as they
+     * should exist beforehand.
+     */
+    if ($core_activities_voc && field_info_instance('taxonomy_term', 'field_islandora_spa_reference', 'islandora_sp_activities_vocabulary')) {
+      $form['fieldOfActivity_tags']['fieldOfActivity']['#autocomplete_path'] = "taxonomy/autocomplete/$core_activities_voc_ref";
+      $form['fieldOfActivity_tags']['fieldOfActivity']['#element_validate'][0] = "taxonomy_autocomplete_validate";
+    }
+  }
  if (isset($form_state['association']) && $form_state['association']['dsid'] == 'MODS') {
    $form['u12_fieldset'] = array(
      '#type' => 'fieldset',
@@ -106,7 +119,7 @@ function islandora_scholar_profile_xml_form_builder_get_form_modify_definition_a
                  array (
                    'path' => 'self::node()',
                    'context' => 'self',
-                 ),
+                 )
              ),
            'u1_identifier_text' =>
              array (
@@ -133,9 +146,9 @@ function islandora_scholar_profile_xml_form_builder_get_form_modify_definition_a
                      ),
                    'update' => NULL,
                    'delete' => NULL,
-                 ),
-             ),
-         ),
+                 )
+             )
+         )
      ),
      'u2_identifier_tabs' => array (
      '#type' => 'tabs',
@@ -166,7 +179,7 @@ function islandora_scholar_profile_xml_form_builder_get_form_modify_definition_a
                array (
                  'path' => 'self::node()',
                  'context' => 'self',
-               ),
+               )
            ),
          'u2_identifier_text' =>
            array (
@@ -193,9 +206,9 @@ function islandora_scholar_profile_xml_form_builder_get_form_modify_definition_a
                    ),
                  'update' => NULL,
                  'delete' => NULL,
-               ),
-           ),
-       ),
+               )
+           )
+       )
    )
    );
  }
