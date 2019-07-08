@@ -106,7 +106,7 @@ function islandora_scholar_profile_xml_form_builder_get_form_modify_definition_a
   $core_vocabulary = variable_get('islandora_scholar_profile_activity_taxonomy', 'islandora_sp_activities_vocabulary');
   $core_activities_voc = taxonomy_vocabulary_machine_name_load($core_vocabulary);
   $core_activities_voc_ref = variable_get('islandora_scholar_profile_activity_taxonomy_ref_field', 'field_islandora_spa_reference');
-  if (array_key_exists('islandora_mads_person_form', $form_state['associations'])) {
+  if ($form_state['association']['id'] == 'islandora_mads_person_form') {
     /**
      * Here we're updating the XML form to expose Interests as a taxonomy reference instead of just plain tags, as long as the
      * taxonomy vocabulary and reference field set by the user exists, this will limit the things users can set as interests as they
