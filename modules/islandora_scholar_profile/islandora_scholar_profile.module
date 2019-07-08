@@ -41,6 +41,26 @@ function islandora_scholar_profile_theme_registry_alter(&$theme_registry) {
   $theme_registry['islandora_person']['theme path'] = $path;
 }
 
+function islandora_scholar_profile_views_pre_render (&$view) {
+ if ($view->name == 'islandora_profile__scholar_directory') {
+    foreach ($view->result as $item) {
+      foreach ($item->MADS_organization_ms as $index => &$org) {
+        // Get all persons matching my department.
+        //@TODO this is hack, we need to update the view handler
+        $org = l($org, "islandora/search/MADS_organization_ms:\"{$org}\" AND RELS_EXT_isMemberOfCollection_uri_s:(info\:fedora\~slsh~islandora\:person)");
+      }
+    }
+ }
+}
+
+/**
+ * Implements hook_views_post_render().
+ */
+function islandora_scholar_profile_views_post_render(&$view, &$output, &$cache) {
+  //@TODO this is hack, we need to update the view handler
+  $output = htmlspecialchars_decode($output);
+}
+
 /**
  * Implements hook_islandora_required_objects().
  */
@@ -153,131 +173,110 @@ function islandora_scholar_profile_xml_form_builder_get_form_modify_definition_a
       );
     }
   }
- if (isset($form_state['association']) && $form_state['association']['dsid'] == 'MODS') {
-   $form['u12_fieldset'] = array(
-     '#type' => 'fieldset',
-     '#access' => true,
-     '#collapsed' => FALSE,
-     '#title' => 'Profile Identifiers',
-     '#description' => t('U1 and U2 identifiers to link this object with a(many) department(s) and a(many) researcher(s)'),
-     'u1_identifier_tabs' => array (
-       '#type' => 'tabs',
-       '#access' => true,
-       '#required' => false,
-       '#title' => 'Faculty Identifier(s)',
-       '#tree' => true,
-       'u1_identifier_tabpanel' =>
-         array (
-           '#type' => 'tabpanel',
-           '#access' => true,
-           '#description' => 'This is the faculty member\'s username. If more than one faculty member is required, select Add button and add another identifier.',
-           '#required' => false,
-           '#tree' => true,
-           '#actions' =>
-             array (
-               'create' => NULL,
-               'read' =>
-                 array (
-                   'path' => '/mods:mods/mods:identifier[@type=\'u1\']',
-                   'context' => 'document',
-                 ),
-               'update' => NULL,
-               'delete' =>
-                 array (
-                   'path' => 'self::node()',
-                   'context' => 'self',
-                 )
-             ),
-           'u1_identifier_text' =>
-             array (
-               '#type' => 'textfield',
-               '#access' => true,
-               '#autocomplete_path' => 'islandora_autocomplete/personCModel/mads.username',
-               '#required' => false,
-               '#tree' => true,
-               '#actions' =>
-                 array (
-                   'create' =>
-                     array (
-                       'path' => '/mods:mods',
-                       'context' => 'document',
-                       'schema' => '',
-                       'type' => 'xml',
-                       'prefix' => NULL,
-                       'value' => '<identifier type="u1">%value%</identifier>',
-                     ),
-                   'read' =>
-                     array (
-                       'path' => 'self::node()',
-                       'context' => 'parent',
-                     ),
-                   'update' => NULL,
-                   'delete' => NULL,
-                 )
-             )
-         )
-     ),
-     'u2_identifier_tabs' => array (
-     '#type' => 'tabs',
-     '#access' => true,
-     '#autocomplete_path' => 'islandora_autocomplete/islandora:organizationCModel/mads.identifier',
-     '#description' => t('This is the departmental identifier. If more than one department is required, select Add button and add another identifier. Ensure that you are using an <b>authorized departmental</b> name from the IslandScholar list.'),
-     '#required' => false,
-     '#title' => 'Departmental Identifier(s)',
-     '#tree' => true,
-     'u2_identifier_tabpanel' =>
-       array (
-         '#type' => 'tabpanel',
-         '#access' => true,
-         '#description' => t('This is the departmental identifier. If more than one department is required, select Add button and add another identifier.'),
-         '#required' => false,
-         '#tree' => true,
-         '#actions' =>
-           array (
-             'create' => NULL,
-             'read' =>
-               array (
-                 'path' => '/mods:mods/mods:identifier[@type=\'u2\']',
-                 'context' => 'document',
-               ),
-             'update' => NULL,
-             'delete' =>
-               array (
-                 'path' => 'self::node()',
-                 'context' => 'self',
-               )
-           ),
-         'u2_identifier_text' =>
-           array (
-             '#type' => 'textfield',
-             '#access' => true,
-             '#autocomplete_path' => 'islandora_autocomplete/organizationCModel/mads.namePart/',
-             '#required' => false,
-             '#tree' => true,
-             '#actions' =>
-               array (
-                 'create' =>
-                   array (
-                     'path' => '/mods:mods',
-                     'context' => 'document',
-                     'schema' => '',
-                     'type' => 'xml',
-                     'prefix' => NULL,
-                     'value' => '<identifier type="u2">%value%</identifier>',
-                   ),
-                 'read' =>
-                   array (
-                     'path' => 'self::node()',
-                     'context' => 'parent',
-                   ),
-                 'update' => NULL,
-                 'delete' => NULL,
-               )
-           )
-       )
-   )
-   );
- }
+  if (isset($form_state['association']) && $form_state['association']['dsid'] == 'MODS') {
+    $form['u12_fieldset'] = array(
+      '#type' => 'fieldset',
+      '#access' => true,
+      '#collapsed' => FALSE,
+      '#title' => 'Profile Identifiers',
+      '#description' => t('U1 and U2 identifiers to link this object with a(many) department(s) and a(many) researcher(s)'),
+      'u1_identifier_tabs' => array (
+        '#type' => 'tabs',
+        '#access' => true,
+        '#required' => false,
+        '#title' => 'Faculty Identifier(s)',
+        '#tree' => true,
+        'u1_identifier_tabpanel' =>
+          array (
+            '#type' => 'tabpanel',
+            '#access' => true,
+            '#autocomplete_path' => 'islandora_autocomplete/islandora:personCModel/mads.identifier',
+            '#description' => 'This is the faculty member\'s username. If more than one faculty member is required, select Add button and add another identifier.',
+            '#required' => false,
+            '#tree' => true,
+            'u1_identifier_text' =>
+              array (
+                '#type' => 'textfield',
+                '#access' => true,
+                '#autocomplete_path' => 'islandora_autocomplete/islandora:personCModel/mads.username',
+                '#required' => false,
+                '#tree' => true,
+                '#actions' =>
+                  array (
+                    'create' =>
+                      array (
+                        'path' => '/mods:mods',
+                        'context' => 'document',
+                        'schema' => '',
+                        'type' => 'xml',
+                        'prefix' => NULL,
+                        'value' => '<identifier type="u1">%value%</identifier>',
+                      ),
+                    'read' =>
+                      array (
+                        'path' => '/mods:mods/mods:identifier[@type=\'u1\']',
+                        'context' => 'document',
+                      ),
+                    'update' => NULL,
+                    'delete' =>
+                  array (
+                    'path' => 'self::node()',
+                    'context' => 'self',
+                  ),
+                  )
+              )
+          )
+      ),
+      'u2_identifier_tabs' => array (
+        '#type' => 'tabs',
+        '#access' => true,
+        '#description' => t('This is the departmental identifier. If more than one department is required, select Add button and add another identifier. Ensure that you are using an <b>authorized departmental</b> name from the IslandScholar list.'),
+        '#required' => false,
+        '#title' => 'Departmental Identifier(s)',
+        '#tree' => true,
+        'u2_identifier_tabpanel' =>
+          array (
+            '#type' => 'tabpanel',
+            '#access' => true,
+            '#autocomplete_path' => 'islandora_autocomplete/islandora:organizationCModel/mads.identifier',
+            '#description' => t('This is the departmental identifier. If more than one department is required, select Add button and add another identifier.'),
+            '#required' => false,
+            '#tree' => true,
+            'u2_identifier_text' =>
+              array (
+                '#type' => 'textfield',
+                '#access' => true,
+                '#autocomplete_path' => 'islandora_autocomplete/islandora:organizationCModel/mads.namePart/',
+                '#required' => false,
+                '#tree' => true,
+                '#actions' =>
+                  array (
+                    'create' =>
+                      array (
+                        'path' => '/mods:mods',
+                        'context' => 'document',
+                        'schema' => '',
+                        'type' => 'xml',
+                        'prefix' => NULL,
+                        'value' => '<identifier type="u2">%value%</identifier>',
+                      ),
+                    'read' =>
+                      array (
+                        'path' => '/mods:mods/mods:identifier[@type=\'u2\']',
+                        'context' => 'document',
+                      ),
+                    'update' => NULL,
+                    'delete' =>
+                      array (
+                        'path' => 'self::node()',
+                        'context' => 'self',
+                      )
+                  )
+              )
+          )
+      )
+    );
+  }
 }
 
 /**
@@ -318,4 +317,30 @@ function islandora_scholar_profile_preprocess_islandora_person(array &$variables
       $variables['activities'] = theme_item_list($list_variables);
     }
   }
+}
+
+/**
+ * Imnplements hook views_api
+ *
+ * @return array
+ */
+function islandora_scholar_profile_views_api() {
+  list($module, $api) = func_get_args();
+  if ($module == "views" && $api == "views_default") {
+    return array("api" => "3.0");
+  }
+}
+
+/**
+ * Implementation of hook_views_default_views().
+ * @return array
+ */
+function islandora_scholar_profile_views_default_views() {
+  $views = array();
+  foreach (glob(dirname(__FILE__) . "/views/*.inc") as $filename) {
+    include_once($filename);
+    /** @var view $view  View definition coming from the included inc file */
+    $views[$view->name] = $view;
+  }
+  return $views;
 }
