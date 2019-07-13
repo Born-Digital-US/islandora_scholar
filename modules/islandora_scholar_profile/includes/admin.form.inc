@@ -47,6 +47,20 @@ function islandora_scholar_profile_admin(array $form, array &$form_state) {
     '#default_value' => variable_get('islandora_scholar_profile_activity_taxonomy_ref_field', 'field_islandora_spa_reference'),
   );
 
+  $form['islandora_scholar_profile_entities_linking_content_solr_field'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Reference field, to the the scholar profile that owns the publications that will be shown in the profile'),
+    '#description' => t('has to be the unique u1 identifier that is defined in the profile and also in each object.'),
+    '#default_value' => variable_get('islandora_scholar_profile_entities_linking_content_solr_field', 'mods_u1_mt'),
+  );
+
+  $form['islandora_scholar_profile_entities_linking_content_solr_field'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Reference field, to the the scholar profile that owns the publications that will be shown in the profile'),
+    '#description' => t('has to be the unique u1 identifier that is defined in the profile and also in each object.'),
+    '#default_value' => variable_get('islandora_scholar_profile_entities_linking_content_solr_field', 'mods_u1_mt'),
+  );
+
   $form['islandora_scholar_profile_activity_view'] = array(
     '#type' => 'select',
     '#title' => t('Select the view that should be displayed when a user clicks on a linked activity taxonomy term'),

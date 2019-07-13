@@ -398,6 +398,16 @@ function islandora_scholar_profile_preprocess_islandora_person(array &$variables
       ];
       $variables['activities'] = theme_item_list($list_variables);
     }
+    $identifiers = $simplexml->identifier;
+    foreach ($identifiers as $identifier) {
+      // get all publications with a u1 identifier
+      if ($identifier['type'] == 'u1' && (string) $identifier) {
+        $themed_links = islandora_scholar_profile_get_related_publications((string) $identifier, $variables['title'], 'citations');
+      }
+    }
+    if (!empty($themed_links)) {
+      $variables['recent_citations'] = $themed_links;
+    }
   }
 }
 
@@ -426,4 +436,61 @@ function islandora_scholar_profile_views_default_views() {
     $views[$view->name] = $view;
   }
   return $views;
+}
+
+/**
+ * Gets all citations related to scholars's unique identifier.
+ *
+ * @param string $identifier
+ *   Scholar's unique ID
+ *
+ * @param $title
+ *
+ * @return string|null Array of links pointing to citations
+ *   Array of links pointing to citations
+ */
+function islandora_scholar_profile_get_related_publications($identifier, $title) {
+
+  $entities_linking_field = variable_get(
+    'islandora_scholar_profile_entities_linking_content_solr_field', 'mods_identifier_u1_mt'
+  );
+  $query = "+{$entities_linking_field}:\"$identifier\"";
+  $params = array(
+    'limit' => variable_get('islandora_entities_citation_number', '20'),
+  );
+  if (strlen(variable_get('islandora_entities_query_sort', '')) > 0) {
+    $params['sort'] = variable_get('islandora_entities_query_sort', '')
+      . ' ' . variable_get('islandora_entities_query_sort_direction', 'asc');
+  }
+
+  $qp = new IslandoraSolrQueryProcessor();
+  $qp->buildQuery($query, $params);
+  $qp->solrParams['fl'] = "dc.title, PID";
+  $qp->executeQuery(FALSE);
+  try {
+    $results = $qp->islandoraSolrResult['response']['objects'];
+  }
+  catch (Exception $e) {
+    watchdog_exception('Islandora Entities', $e, 'Got an exception while searching entities for callback.', array(), WATCHDOG_ERROR);
+    $results = array();
+  }
+  if ($results) {
+    $links = array();
+    foreach ($results as $choice) {
+      if (isset($choice['solr_doc']['dc.title'])) {
+        $links[] = l($choice['solr_doc']['dc.title'][0], 'islandora/object/' . $choice['PID']);
+      }
+    }
+    $list_variables = array(
+      'items' => $links,
+      'title' => t('Recent @type for <strong>@scholar</strong>', array(
+        '@type' => 'publications',
+        '@scholar' => $title,
+      )),
+      'type' => 'ul',
+      'attributes' => array('class' => 'recent_citations'),
+    );
+    return theme_item_list($list_variables);
+  }
+  return NULL;
 }
