@@ -40,13 +40,6 @@ function islandora_scholar_profile_preprocess_html(&$variables) {
 }
 
 
-/**
- * Implements hook_menu_alter().
- */
-function islandora_scholar_profile_menu_alter(&$items) {
-  $items['term_ref_autocomplete/autocomplete']['page callback'] = 'islandora_scholar_profile_term_ref_autocomplete_callback';
-}
-
 function islandora_scholar_profile_term_ref_autocomplete_callback($field_name, $raw_tags_typed = '') {
   $field = field_info_field($field_name);
 
@@ -120,6 +113,11 @@ function islandora_scholar_profile_theme_registry_alter(&$theme_registry) {
 function islandora_scholar_profile_views_pre_render(&$view) {
   if ($view->name == 'islandora_profile__scholar_directory') {
     foreach ($view->result as $item) {
+      foreach ($item->MADS_fieldOfActivity_ms as $index => &$org) {
+        // Get all persons matching my department.
+        //@TODO this is hack, we need to update the view handler
+        $org = l($org, "scholars/interests/{$org}");
+      }
       foreach ($item->MADS_organization_ms as $index => &$org) {
         // Get all persons matching my department.
         //@TODO this is hack, we need to update the view handler
@@ -471,7 +469,7 @@ function islandora_scholar_profile_preprocess_islandora_person(array &$variables
     foreach ($identifiers as $identifier) {
       // get all publications with a u1 identifier
       if ($identifier['type'] == 'u1' && (string) $identifier) {
-        $themed_links = islandora_scholar_profile_get_related_publications((string) $identifier, $variables['title'], 'citations');
+        $themed_links = islandora_scholar_profile_get_related_publications((string) $identifier, $variables['title']);
       }
     }
     if (!empty($themed_links)) {

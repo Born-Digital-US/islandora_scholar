@@ -19,21 +19,31 @@ $handler->display->display_options['cache']['type'] = 'none';
 $handler->display->display_options['query']['type'] = 'views_query';
 $handler->display->display_options['exposed_form']['type'] = 'basic';
 $handler->display->display_options['pager']['type'] = 'full';
-$handler->display->display_options['pager']['options']['items_per_page'] = '10';
+$handler->display->display_options['pager']['options']['items_per_page'] = '25';
+$handler->display->display_options['pager']['options']['offset'] = '0';
+$handler->display->display_options['pager']['options']['id'] = '0';
+$handler->display->display_options['pager']['options']['quantity'] = '9';
 $handler->display->display_options['style_plugin'] = 'table';
 $handler->display->display_options['style_options']['columns'] = array(
   'PID' => 'PID',
+  'nothing' => 'nothing',
   'MADS_fullname_ms' => 'MADS_fullname_ms',
   'MADS_u1_ms' => 'MADS_u1_ms',
   'MADS_organization_ms' => 'MADS_organization_ms',
   'MADS_email_ms' => 'MADS_email_ms',
   'MADS_status_ms' => 'MADS_status_ms',
+  'MADS_fieldOfActivity_ms' => 'MADS_fieldOfActivity_ms',
 );
 $handler->display->display_options['style_options']['default'] = '-1';
 $handler->display->display_options['style_options']['info'] = array(
   'PID' => array(
     'sortable' => 0,
     'default_sort_order' => 'asc',
+    'align' => '',
+    'separator' => '',
+    'empty_column' => 0,
+  ),
+  'nothing' => array(
     'align' => '',
     'separator' => '',
     'empty_column' => 0,
@@ -59,6 +69,11 @@ $handler->display->display_options['style_options']['info'] = array(
     'empty_column' => 0,
   ),
   'MADS_status_ms' => array(
+    'align' => '',
+    'separator' => '',
+    'empty_column' => 0,
+  ),
+  'MADS_fieldOfActivity_ms' => array(
     'align' => '',
     'separator' => '',
     'empty_column' => 0,
@@ -97,7 +112,8 @@ $handler->display->display_options['fields']['MADS_organization_ms']['id'] = 'MA
 $handler->display->display_options['fields']['MADS_organization_ms']['table'] = 'islandora_solr';
 $handler->display->display_options['fields']['MADS_organization_ms']['field'] = 'MADS_organization_ms';
 $handler->display->display_options['fields']['MADS_organization_ms']['label'] = 'Department(s)';
-$handler->display->display_options['fields']['MADS_organization_ms']['alter']['make_link'] = TRUE;
+$handler->display->display_options['fields']['MADS_organization_ms']['alter']['alter_text'] = TRUE;
+$handler->display->display_options['fields']['MADS_organization_ms']['alter']['text'] = '[MADS_organization_ms]';
 $handler->display->display_options['fields']['MADS_organization_ms']['alter']['path'] = 'islandora/search/MADS_organization_ms:("[MADS_organization_ms]")?sort=MADS_family_s asc';
 $handler->display->display_options['fields']['MADS_organization_ms']['link_to_object'] = 0;
 /* Field: Islandora Solr: MADS_email_ms */
@@ -114,6 +130,18 @@ $handler->display->display_options['fields']['MADS_status_ms']['table'] = 'islan
 $handler->display->display_options['fields']['MADS_status_ms']['field'] = 'MADS_status_ms';
 $handler->display->display_options['fields']['MADS_status_ms']['label'] = 'Status';
 $handler->display->display_options['fields']['MADS_status_ms']['link_to_object'] = 0;
+/* Field: Islandora Solr: MADS_fieldOfActivity_ms */
+$handler->display->display_options['fields']['MADS_fieldOfActivity_ms']['id'] = 'MADS_fieldOfActivity_ms';
+$handler->display->display_options['fields']['MADS_fieldOfActivity_ms']['table'] = 'islandora_solr';
+$handler->display->display_options['fields']['MADS_fieldOfActivity_ms']['field'] = 'MADS_fieldOfActivity_ms';
+$handler->display->display_options['fields']['MADS_fieldOfActivity_ms']['label'] = 'Interests';
+$handler->display->display_options['fields']['MADS_fieldOfActivity_ms']['link_to_object'] = 0;
+/* Contextual filter: Islandora Solr: MADS_fieldOfActivity_ms */
+$handler->display->display_options['arguments']['MADS_fieldOfActivity_ms']['id'] = 'MADS_fieldOfActivity_ms';
+$handler->display->display_options['arguments']['MADS_fieldOfActivity_ms']['table'] = 'islandora_solr';
+$handler->display->display_options['arguments']['MADS_fieldOfActivity_ms']['field'] = 'MADS_fieldOfActivity_ms';
+$handler->display->display_options['arguments']['MADS_fieldOfActivity_ms']['default_argument_type'] = 'fixed';
+$handler->display->display_options['arguments']['MADS_fieldOfActivity_ms']['summary']['format'] = 'default_summary';
 /* Filter criterion: Islandora Solr: RELS_EXT_isMemberOfCollection_uri_s */
 $handler->display->display_options['filters']['RELS_EXT_isMemberOfCollection_uri_s']['id'] = 'RELS_EXT_isMemberOfCollection_uri_s';
 $handler->display->display_options['filters']['RELS_EXT_isMemberOfCollection_uri_s']['table'] = 'islandora_solr';
@@ -122,4 +150,27 @@ $handler->display->display_options['filters']['RELS_EXT_isMemberOfCollection_uri
 
 /* Display: Page */
 $handler = $view->new_display('page', 'Page', 'page');
-$handler->display->display_options['path'] = 'solr-scholars';
+$handler->display->display_options['defaults']['arguments'] = FALSE;
+$handler->display->display_options['path'] = 'scholars';
+$handler->display->display_options['menu']['type'] = 'normal';
+$handler->display->display_options['menu']['title'] = 'Scholars';
+$handler->display->display_options['menu']['description'] = 'Show all registered scholars';
+$handler->display->display_options['menu']['weight'] = '0';
+$handler->display->display_options['menu']['name'] = 'main-menu';
+$handler->display->display_options['menu']['context'] = 0;
+$handler->display->display_options['menu']['context_only_inline'] = 0;
+
+/* Display: Page */
+$handler = $view->new_display('page', 'Page', 'page_1');
+$handler->display->display_options['defaults']['arguments'] = FALSE;
+/* Contextual filter: Islandora Solr: MADS_fieldOfActivity_ms */
+$handler->display->display_options['arguments']['MADS_fieldOfActivity_ms']['id'] = 'MADS_fieldOfActivity_ms';
+$handler->display->display_options['arguments']['MADS_fieldOfActivity_ms']['table'] = 'islandora_solr';
+$handler->display->display_options['arguments']['MADS_fieldOfActivity_ms']['field'] = 'MADS_fieldOfActivity_ms';
+$handler->display->display_options['arguments']['MADS_fieldOfActivity_ms']['default_action'] = 'default';
+$handler->display->display_options['arguments']['MADS_fieldOfActivity_ms']['default_argument_type'] = 'raw';
+$handler->display->display_options['arguments']['MADS_fieldOfActivity_ms']['default_argument_options']['index'] = '2';
+$handler->display->display_options['arguments']['MADS_fieldOfActivity_ms']['summary']['number_of_records'] = '0';
+$handler->display->display_options['arguments']['MADS_fieldOfActivity_ms']['summary']['format'] = 'default_summary';
+$handler->display->display_options['arguments']['MADS_fieldOfActivity_ms']['summary_options']['items_per_page'] = '25';
+$handler->display->display_options['path'] = 'scholars/interests';
