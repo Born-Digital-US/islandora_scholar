@@ -61,13 +61,5 @@ function islandora_scholar_profile_admin(array $form, array &$form_state) {
     '#default_value' => variable_get('islandora_scholar_profile_entities_linking_content_solr_field', 'mods_u1_mt'),
   );
 
-  $form['islandora_scholar_profile_activity_view'] = array(
-    '#type' => 'select',
-    '#title' => t('Select the view that should be displayed when a user clicks on a linked activity taxonomy term'),
-    '#description' => t('this only lists, solr based views, selecting --none-- will disable linking from the profile'),
-    '#options' => $view_array ,
-    '#default_value' => variable_get('islandora_scholar_profile_activity_view', 'islandora_sp_activities_view'),
-  );
-
   return system_settings_form($form);
 }

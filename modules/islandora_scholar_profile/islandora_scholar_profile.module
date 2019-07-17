@@ -21,9 +21,23 @@ function islandora_scholar_profile_menu() {
     'type' => MENU_CALLBACK,
     'access arguments' => array('search islandora solr'),
   );
+  // This will use the default islandora/search callback
+  $items['scholars/directory'] = array(
+    'title' => 'Scholar\'s directory',
+    'page callback' => 'islandora_scholar_profile_directory',
+    'type' => MENU_NORMAL_ITEM,
+    'menu_name' => 'main-menu',
+    'access arguments' => array('access content'),
+  );
   return $items;
 }
 
+/**
+ * Redirects to search
+ */
+function islandora_scholar_profile_directory() {
+  drupal_goto('islandora/search/RELS_EXT_isMemberOfCollection_uri_s:(info\:fedora\~slsh~islandora\:person)');
+}
 /**
  * Implements hook_prepare().
  */
@@ -106,34 +120,11 @@ function islandora_scholar_profile_term_ref_autocomplete_callback($field_name, $
  */
 function islandora_scholar_profile_theme_registry_alter(&$theme_registry) {
   $path = drupal_get_path('module', 'islandora_scholar_profile');
+  // Override profile theme
   $theme_registry['islandora_person']['template'] = $path . '/templates/islandora-person';
   $theme_registry['islandora_person']['theme path'] = $path;
 }
 
-function islandora_scholar_profile_views_pre_render(&$view) {
-  if ($view->name == 'islandora_profile__scholar_directory') {
-    foreach ($view->result as $item) {
-      foreach ($item->MADS_fieldOfActivity_ms as $index => &$org) {
-        // Get all persons matching my department.
-        //@TODO this is hack, we need to update the view handler
-        $org = l($org, "scholars/interests/{$org}");
-      }
-      foreach ($item->MADS_organization_ms as $index => &$org) {
-        // Get all persons matching my department.
-        //@TODO this is hack, we need to update the view handler
-        $org = l($org, "islandora/search/MADS_organization_ms:\"{$org}\" AND RELS_EXT_isMemberOfCollection_uri_s:(info\:fedora\~slsh~islandora\:person)");
-      }
-    }
-  }
-}
-
-/**
- * Implements hook_views_post_render().
- */
-function islandora_scholar_profile_views_post_render(&$view, &$output, &$cache) {
-  //@TODO this is hack, we need to update the view handler
-  $output = htmlspecialchars_decode($output);
-}
 
 /**
  * Implements hook_islandora_required_objects().
@@ -450,7 +441,7 @@ function islandora_scholar_profile_preprocess_islandora_person(array &$variables
         if (!empty($terms)) {
           //if there are multiple matches, use the first one
           $terms = array_shift($terms);
-          $activity_name = l($terms->name, variable_get('islandora_scholar_profile_activity_view', 'islandora_sp_activities_view') . "/{$terms->tid}");
+          $activity_name = l($terms->name, 'islandora/search/MADS_fieldOfActivity_mt:('. $terms->name .') AND RELS_EXT_isMemberOfCollection_uri_s:(info\:fedora\~slsh~islandora\:person)');
         }
         // lookup in taxonomy defined in settings.
         $fields_of_activity[] = (string) $activity_name;
@@ -470,6 +461,7 @@ function islandora_scholar_profile_preprocess_islandora_person(array &$variables
       // get all publications with a u1 identifier
       if ($identifier['type'] == 'u1' && (string) $identifier) {
         $themed_links = islandora_scholar_profile_get_related_publications((string) $identifier, $variables['title']);
+        $variables['recent_citations_see_all'] = l('See All', 'islandora/search/mods_identifier_u1_mt:('.$identifier.')');
       }
     }
     if (!empty($themed_links)) {
@@ -478,32 +470,6 @@ function islandora_scholar_profile_preprocess_islandora_person(array &$variables
   }
 }
 
-/**
- * Imnplements hook views_api
- *
- * @return array
- */
-function islandora_scholar_profile_views_api() {
-  list($module, $api) = func_get_args();
-  if ($module == "views" && $api == "views_default") {
-    return ["api" => "3.0"];
-  }
-}
-
-/**
- * Implementation of hook_views_default_views().
- *
- * @return array
- */
-function islandora_scholar_profile_views_default_views() {
-  $views = [];
-  foreach (glob(dirname(__FILE__) . "/views/*.inc") as $filename) {
-    include_once($filename);
-    /** @var view $view View definition coming from the included inc file */
-    $views[$view->name] = $view;
-  }
-  return $views;
-}
 
 /**
  * Gets all citations related to scholars's unique identifier.

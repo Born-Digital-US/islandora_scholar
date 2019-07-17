@@ -21,8 +21,10 @@
 
         <div class="col-right">
             <div class="islandora-object-metadata">
-              <?php if (isset($variables['metadata'])): ?>
+              <?php if (isset($variables['metadata']) && !is_array($variables['metadata'])) : ?>
                 <?php print $variables['metadata']; ?>
+              <?php else: ?>
+                <?php print render($variables['metadata']); ?>
               <?php endif; ?>
             </div>
             <div class="islandora-object-scholars">
@@ -34,6 +36,7 @@
 
               <?php if (isset($variables['recent_citations'])): ?>
                 <?php print $variables['recent_citations']; ?>
+                <?php print $variables['recent_citations_see_all']; ?>
               <?php endif; ?>
             </div>
         </div>
