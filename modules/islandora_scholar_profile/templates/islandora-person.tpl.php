@@ -27,6 +27,7 @@
                 <?php print render($variables['metadata']); ?>
               <?php endif; ?>
             </div>
+
             <div class="islandora-object-scholars">
               <?php if (isset($variables['fellow_scholars'])): ?>
                 <?php foreach ($variables['fellow_scholars'] as $dept): ?>
@@ -39,9 +40,14 @@
                 <?php print $variables['recent_citations_see_all']; ?>
               <?php endif; ?>
             </div>
-        </div>
 
-        <div class="islandora-object-content">
+            <div class="islandora-object-content">
+                <h3 class="bio"><?php print t('Biography'); ?></h3>
+              <?php if (isset($variables['biography'])): ?>
+                  <p><?php print $variables['biography']; ?></p>
+              <?php endif; ?>
+            </div>
+
           <?php if (isset($variables['rss_feed'])): ?>
             <?php print $variables['rss_feed']; ?>
           <?php endif; ?>

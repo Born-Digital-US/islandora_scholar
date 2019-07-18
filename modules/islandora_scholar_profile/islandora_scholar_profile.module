@@ -221,201 +221,101 @@ function islandora_scholar_profile_xml_form_builder_get_form_modify_definition_a
   $core_vocabulary = variable_get('islandora_scholar_profile_activity_taxonomy', 'islandora_sp_activities_vocabulary');
   $core_activities_voc = taxonomy_vocabulary_machine_name_load($core_vocabulary);
   $core_activities_voc_ref = variable_get('islandora_scholar_profile_activity_taxonomy_ref_field', 'field_islandora_spa_reference');
-  if ($form_state['association']['id'] == 'islandora_mads_person_form') {
+  if (isset($form_state['associations']) && in_array('islandora_mads_person_form', array_keys($form_state['associations']))) {
     /**
      * Here we're updating the XML form to expose Interests as a taxonomy reference instead of just plain tags, as long as the
      * taxonomy vocabulary and reference field set by the user exists, this will limit the things users can set as interests as they
      * should exist beforehand.
      */
     if ($core_activities_voc && field_info_instance('taxonomy_term', $core_activities_voc_ref, $core_vocabulary)) {
-      $form['fieldOfActivity_tags']['#type'] = 'tabs';
-      // Create tab panel and set the new autocomplete widget
-      $form['fieldOfActivity_tags']['fieldOfActivity_tabpanel'] = [
-        '#type' => 'tabpanel',
-        '#access' => TRUE,
-        '#collapsed' => FALSE,
-        '#collapsible' => FALSE,
-        '#disabled' => FALSE,
-        '#executes_submit_callback' => FALSE,
-        '#multiple' => FALSE,
-        '#required' => FALSE,
-        '#resizable' => FALSE,
-        '#tree' => TRUE,
-        'fieldOfActivity' =>
-          [
-            '#type' => 'term_ref_autocomplete_field',
-            '#access' => TRUE,
-            '#autocomplete_path' => 'term_ref_autocomplete/autocomplete/' . $core_activities_voc_ref,
-            '#collapsed' => TRUE,
-            '#collapsible' => TRUE,
-            '#disabled' => FALSE,
-            '#element_validate' => ['term_ref_autocomplete_taxonomy_autocomplete_validate'],
-            '#executes_submit_callback' => FALSE,
-            '#multiple' => TRUE,
-            '#required' => FALSE,
-            '#resizable' => FALSE,
-            '#theme' => 'term_ref_autocomplete_field',
-            '#title' => 'Research Interests',
-            '#tree' => TRUE,
-            '#actions' =>
-              [
-                'create' =>
-                  [
-                    'path' => '/mads:mads',
-                    'context' => 'document',
-                    'schema' => '',
-                    'type' => 'element',
-                    'prefix' => NULL,
-                    'value' => 'fieldOfActivity',
-                  ],
-                'read' =>
-                  [
-                    'path' => '/mads:mads/mads:fieldOfActivity',
-                    'context' => 'document',
-                  ],
-                'update' =>
-                  [
-                    'path' => 'self::node()',
-                    'context' => 'self',
-                  ],
-                'delete' =>
-                  [
-                    'path' => 'self::node()',
-                    'context' => 'self',
-                  ],
-              ],
-          ],
-      ];
+      $form['fieldOfActivity_tags']['fieldOfActivity']['#autocomplete_path'] = 'taxonomy/autocomplete/' . $core_activities_voc_ref;
+      $form['fieldOfActivity_tags']['fieldOfActivity']['#element_validate'] = ['term_ref_autocomplete_taxonomy_autocomplete_validate'];
     }
   }
   if (isset($form_state['association']) && $form_state['association']['dsid'] == 'MODS') {
-     $form['u1_identifier_tabs'] = array (
-       '#type' => 'tabs',
-       '#access' => true,
-       '#required' => false,
-       '#title' => 'Faculty Identifier(s)',
-       '#tree' => true,
-       'u1_identifier_tabpanel' =>
-         array (
-           '#type' => 'tabpanel',
-           '#access' => true,
-           '#description' => 'This is the faculty member\'s identifier ID. If more than one faculty member is required, select Add button and add another identifier.',
-           '#required' => false,
-           '#tree' => true,
-           '#actions' =>
-             array (
-               'create' => NULL,
-               'read' =>
-                 array (
-                   'path' => '/mods:mods/mods:identifier[@type=\'u1\']',
-                   'context' => 'document',
-                 ),
-               'update' => NULL,
-               'delete' =>
-                 array (
-                   'path' => 'self::node()',
-                   'context' => 'self',
-                 ),
-             ),
-           'u1_identifier_text' =>
-             array (
-               '#type' => 'textfield',
-               '#access' => true,
-               '#autocomplete_path' => 'islandora/entities/autocomplete/fp/disambiguated',
-               '#required' => false,
-               '#tree' => true,
-               '#actions' =>
-                 array (
-                   'create' =>
-                     array (
-                       'path' => '/mods:mods',
-                       'context' => 'document',
-                       'schema' => '',
-                       'type' => 'xml',
-                       'prefix' => NULL,
-                       'value' => '<identifier type="u1">%value%</identifier>',
-                     ),
-                   'read' =>
-                     array (
-                       'path' => 'self::node()',
-                       'context' => 'parent',
-                     ),
-                   'update' => array (
-                     'path' => 'self::node()',
-                     'context' => 'self',
-                   ),
-                   'delete' => array (
-                     'path' => 'self::node()',
-                     'context' => 'self',
-                   ),
-                 ),
-             ),
-         ),
-     );
-     $form['u2_identifier_tabs'] = array (
-       '#type' => 'tabs',
-       '#access' => true,
-       '#description' => 'This is the departmental identifier. If more than one department is required, select Add button and add another identifier. Ensure that you are using an <b>authorized departmental</b> name from the IslandScholar list.',
-       '#required' => false,
-       '#title' => 'Departmental Identifier(s)',
-       '#tree' => true,
-       'u2_identifier_tabpanel' =>
-         array (
-           '#type' => 'tabpanel',
-           '#access' => true,
-           '#description' => 'This is the departmental identifier. If more than one department is required, select Add button and add another identifier.',
-           '#required' => false,
-           '#tree' => true,
-           '#actions' =>
-             array (
-               'create' => NULL,
-               'read' =>
-                 array (
-                   'path' => '/mods:mods/mods:identifier[@type=\'u2\']',
-                   'context' => 'document',
-                 ),
-               'update' => NULL,
-               'delete' =>
-                 array (
-                   'path' => 'self::node()',
-                   'context' => 'self',
-                 ),
-             ),
-           'u2_identifier_text' =>
-             array (
-               '#type' => 'textfield',
-               '#access' => true,
-               '#autocomplete_path' => 'islandora/entities/autocomplete/fp/department',
-               '#required' => false,
-               '#tree' => true,
-               '#actions' =>
-                 array (
-                   'create' =>
-                     array (
-                       'path' => '/mods:mods',
-                       'context' => 'document',
-                       'schema' => '',
-                       'type' => 'xml',
-                       'prefix' => NULL,
-                       'value' => '<identifier type="u2">%value%</identifier>',
-                     ),
-                   'read' =>
-                     array (
-                       'path' => 'self::node()',
-                       'context' => 'parent',
-                     ),
-                   'update' => array (
-                     'path' => 'self::node()',
-                     'context' => 'self',
-                   ),
-                   'delete' => array (
-                     'path' => 'self::node()',
-                     'context' => 'self',
-                   ),
-                 ),
-             ),
-         ),
-     );
+    $form['u1_identifier_tags'] = [
+      '#type' => 'tags',
+      '#access' => TRUE,
+      '#required' => FALSE,
+      '#description' => 'This is the faculty member\'s identifier ID. If more than one faculty member is required, select Add button and add another identifier.',
+      '#title' => 'Faculty Identifier(s)',
+      '#tree' => TRUE,
+      'u1_identifier_text' =>
+        [
+          '#type' => 'tag',
+          '#access' => TRUE,
+          '#autocomplete_path' => 'islandora/entities/autocomplete/fp/disambiguated',
+          '#required' => FALSE,
+          '#tree' => TRUE,
+          '#actions' =>
+            [
+              'create' =>
+                [
+                  'path' => '/mods:mods',
+                  'context' => 'document',
+                  'schema' => '',
+                  'type' => 'xml',
+                  'prefix' => NULL,
+                  'value' => '<identifier type="u1">%value%</identifier>',
+                ],
+              'read' =>
+                [
+                  'path' => '/mods:mods/mods:identifier[@type=\'u1\']',
+                  'context' => 'document',
+                ],
+              'update' => [
+                'path' => 'self::node()',
+                'context' => 'self',
+              ],
+              'delete' => [
+                'path' => 'self::node()',
+                'context' => 'self',
+              ],
+            ],
+        ],
+    ];
+
+    $form['u2_identifier_tags'] = [
+      '#type' => 'tags',
+      '#access' => TRUE,
+      '#required' => FALSE,
+      '#description' => 'This is the departmental identifier. If more than one department is required, select Add button and add another identifier. Ensure that you are using an <b>authorized departmental</b> name from the IslandScholar list.',
+      '#title' => 'Departmental Identifier(s)',
+      '#tree' => TRUE,
+      'u2_identifier_text' =>
+        [
+          '#type' => 'tag',
+          '#access' => TRUE,
+          '#autocomplete_path' => 'islandora/entities/autocomplete/fp/department',
+          '#required' => FALSE,
+          '#tree' => TRUE,
+          '#actions' =>
+            [
+              'create' =>
+                [
+                  'path' => '/mods:mods',
+                  'context' => 'document',
+                  'schema' => '',
+                  'type' => 'xml',
+                  'prefix' => NULL,
+                  'value' => '<identifier type="u1">%value%</identifier>',
+                ],
+              'read' =>
+                [
+                  'path' => '/mods:mods/mods:identifier[@type=\'u2\']',
+                  'context' => 'document',
+                ],
+              'update' => [
+                'path' => 'self::node()',
+                'context' => 'self',
+              ],
+              'delete' => [
+                'path' => 'self::node()',
+                'context' => 'self',
+              ],
+            ],
+        ],
+    ];
   }
 }
 
