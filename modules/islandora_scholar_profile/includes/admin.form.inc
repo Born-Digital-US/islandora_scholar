@@ -51,7 +51,7 @@ function islandora_scholar_profile_admin(array $form, array &$form_state) {
     '#type' => 'textfield',
     '#title' => t('Reference field, to the the scholar profile that owns the publications that will be shown in the profile'),
     '#description' => t('has to be the unique u1 identifier that is defined in the profile and also in each object.'),
-    '#default_value' => variable_get('islandora_scholar_profile_entities_linking_content_solr_field', 'mods_u1_mt'),
+    '#default_value' => variable_get('islandora_scholar_profile_entities_linking_content_solr_field', 'mods_identifier_u1_mt'),
   );
 
   return system_settings_form($form);
