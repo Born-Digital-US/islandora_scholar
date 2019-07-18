@@ -373,9 +373,6 @@ function islandora_scholar_profile_preprocess_islandora_person(array &$variables
     if (!empty($themed_links)) {
       $variables['recent_citations'] = $themed_links;
     }
-    if (isset($variables['metadata']) && !is_array($variables['metadata'])) {
-      $variables['metadata'] = drupal_render($variables['metadata']);
-    }
   }
 }
 
