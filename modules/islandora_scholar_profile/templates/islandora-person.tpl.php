@@ -21,11 +21,7 @@
 
         <div class="col-right">
             <div class="islandora-object-metadata">
-              <?php if (isset($variables['metadata']) && !is_array($variables['metadata'])) : ?>
                 <?php print $variables['metadata']; ?>
-              <?php else: ?>
-                <?php print render($variables['metadata']); ?>
-              <?php endif; ?>
             </div>
 
             <div class="islandora-object-scholars">
