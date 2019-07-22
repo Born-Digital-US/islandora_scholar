@@ -347,7 +347,7 @@ function islandora_scholar_profile_preprocess_islandora_person(array &$variables
         if (!empty($terms)) {
           //if there are multiple matches, use the first one
           $terms = array_shift($terms);
-          $activity_name = l($terms->name, 'islandora/search/MADS_fieldOfActivity_mt:('. $terms->name .') AND RELS_EXT_isMemberOfCollection_uri_s:(info\:fedora\~slsh~islandora\:person)');
+          $activity_name = l($terms->name, 'islandora/search/MADS_fieldOfActivity_mt:('. str_replace('/', '\~slsh~', $terms->name) .') AND RELS_EXT_isMemberOfCollection_uri_s:(info\:fedora\~slsh~islandora\:person)');
         }
         // lookup in taxonomy defined in settings.
         $fields_of_activity[] = (string) $activity_name;
@@ -372,6 +372,15 @@ function islandora_scholar_profile_preprocess_islandora_person(array &$variables
     }
     if (!empty($themed_links)) {
       $variables['recent_citations'] = $themed_links;
+    }
+    // Meta data
+    if (isset($variables['metadata'])) {
+      if (is_array($variables['metadata'])) {
+        $variables['metadata'] = drupal_render($variables['metadata']);
+      }
+      // Convert camel case, into separate woords.
+      $parts = preg_split('/(?=[A-Z])/', $variables['metadata']);
+      $variables['metadata'] = implode(' ', $parts);
     }
   }
 }
