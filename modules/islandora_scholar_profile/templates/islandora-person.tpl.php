@@ -28,23 +28,19 @@
               <?php endif; ?>
             </div>
             <div class="islandora-object-scholars">
+              <?php if (isset($variables['recent_citations'])): ?>
+                <?php print $variables['recent_citations']; ?>
+                <?php print $variables['recent_citations_see_all']; ?>
+              <?php endif; ?>
+
               <?php if (isset($variables['fellow_scholars'])): ?>
                 <?php foreach ($variables['fellow_scholars'] as $dept): ?>
                   <?php print $dept; ?>
                 <?php endforeach; ?>
               <?php endif; ?>
-
-              <?php if (isset($variables['recent_citations'])): ?>
-                <?php print $variables['recent_citations']; ?>
-                <?php print $variables['recent_citations_see_all']; ?>
-              <?php endif; ?>
             </div>
 
             <div class="islandora-object-content">
-                <h3 class="bio"><?php print t('Biography'); ?></h3>
-              <?php if (isset($variables['biography'])): ?>
-                  <p><?php print $variables['biography']; ?></p>
-              <?php endif; ?>
             </div>
 
           <?php if (isset($variables['rss_feed'])): ?>
