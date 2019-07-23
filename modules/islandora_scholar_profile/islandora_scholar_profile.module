@@ -373,15 +373,6 @@ function islandora_scholar_profile_preprocess_islandora_person(array &$variables
     if (!empty($themed_links)) {
       $variables['recent_citations'] = $themed_links;
     }
-    // Meta data
-    if (isset($variables['metadata'])) {
-      if (is_array($variables['metadata'])) {
-        $variables['metadata'] = drupal_render($variables['metadata']);
-      }
-      // Convert camel case, into separate woords.
-      $parts = preg_split('/(?=[A-Z])/', $variables['metadata']);
-      $variables['metadata'] = implode(' ', $parts);
-    }
   }
 }
 
