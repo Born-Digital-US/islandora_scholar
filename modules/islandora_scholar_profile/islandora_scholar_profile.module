@@ -244,7 +244,7 @@ function islandora_scholar_profile_xml_form_builder_get_form_modify_definition_a
       '#access' => TRUE,
       '#required' => FALSE,
       '#description' => 'This is the faculty member\'s identifier ID. If more than one faculty member is required, select Add button and add another identifier.',
-      '#title' => 'Faculty Identifier(s)',
+      '#title' => 'Faculty Identifier(s) - U1',
       '#tree' => TRUE,
       'u1_identifier_text' =>
         [
@@ -286,7 +286,7 @@ function islandora_scholar_profile_xml_form_builder_get_form_modify_definition_a
       '#access' => TRUE,
       '#required' => FALSE,
       '#description' => 'This is the departmental identifier. If more than one department is required, select Add button and add another identifier. Ensure that you are using an <b>authorized departmental</b> name from the IslandScholar list.',
-      '#title' => 'Departmental Identifier(s)',
+      '#title' => 'Departmental Identifier(s) - U2',
       '#tree' => TRUE,
       'u2_identifier_text' =>
         [
@@ -304,7 +304,7 @@ function islandora_scholar_profile_xml_form_builder_get_form_modify_definition_a
                   'schema' => '',
                   'type' => 'xml',
                   'prefix' => NULL,
-                  'value' => '<identifier type="u1">%value%</identifier>',
+                  'value' => '<identifier type="u2">%value%</identifier>',
                 ],
               'read' =>
                 [
