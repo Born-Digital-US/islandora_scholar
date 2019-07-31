@@ -171,11 +171,11 @@ function islandora_scholar_profile_islandora_required_objects(IslandoraTuque $co
 function islandora_scholar_profile_entities_autocomplete($type) {
   $mappings = array(
     'disambiguated' => array(
-      'cmodel' => 'islandora:personCModel',
+      'cmodel' => 'info:fedora/islandora:personCModel',
       'title' => variable_get('islandora_scholar_profile_entities_scholar_title_solr_field', 'MADS_u1_ms'),
     ),
     'department' => array(
-      'cmodel' => 'islandora:organizationCModel',
+      'cmodel' => 'info:fedora/islandora:organizationCModel',
       'title' => variable_get('islandora_scholar_profile_entities_department_solr_field', 'MADS_u2_ms'),
     ),
   );
@@ -246,6 +246,7 @@ function islandora_scholar_profile_xml_form_builder_get_form_modify_definition_a
       '#description' => 'This is the faculty member\'s identifier ID. If more than one faculty member is required, select Add button and add another identifier.',
       '#title' => 'Faculty Identifier(s) - U1',
       '#tree' => TRUE,
+      '#autocomplete_path' => 'islandora/entities/autocomplete/fp/disambiguated',
       'u1_identifier_text' =>
         [
           '#type' => 'tag',
@@ -288,6 +289,7 @@ function islandora_scholar_profile_xml_form_builder_get_form_modify_definition_a
       '#description' => 'This is the departmental identifier. If more than one department is required, select Add button and add another identifier. Ensure that you are using an <b>authorized departmental</b> name from the IslandScholar list.',
       '#title' => 'Departmental Identifier(s) - U2',
       '#tree' => TRUE,
+      '#autocomplete_path' => 'islandora/entities/autocomplete/fp/department',
       'u2_identifier_text' =>
         [
           '#type' => 'tag',
