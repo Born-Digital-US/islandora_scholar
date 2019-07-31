@@ -63,7 +63,7 @@ function islandora_scholar_profile_admin(array $form, array &$form_state) {
   $form['islandora_scholar_profile_entities_department_solr_field'] = array(
     '#type' => 'textfield',
     '#title' => t('Solr field: used to autocomplete u2 fields in objects, this is a field in the user profile.'),
-    '#default_value' => variable_get('islandora_scholar_profile_entities_linking_content_solr_field', 'MADS_u2_ms'),
+    '#default_value' => variable_get('islandora_scholar_profile_entities_department_solr_field', 'MADS_u2_ms'),
   );
 
   return system_settings_form($form);
